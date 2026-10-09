@@ -1,0 +1,56 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: pages are generated and well-formed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: generate.sh output matches what is committed
+        # The pages are generated. A hand-edited page would drift from the
+        # generator and the next run would silently revert it.
+        run: |
+          set -euo pipefail
+          ./generate.sh >/dev/null
+          if ! git diff --quiet; then
+            echo "::error::committed pages differ from generate.sh output"
+            git --no-pager diff --stat
+            exit 1
+          fi
+          echo "pages match the generator"
+
+      - name: every page carries a usable go-import tag
+        # A malformed or missing tag fails `go get` with a message that points
+        # at the module, not at this repository — so it is checked here.
+        run: |
+          set -euo pipefail
+          fail=0
+          while IFS= read -r f; do
+            dir=$(dirname "$f")
+            [ "$dir" = "." ] && continue
+            path="${dir#./}"
+            if grep -q "content=\"go.smritikosh.in/${path} git https://github.com/smritikosh-app/" "$f"; then
+              echo "ok   $path"
+            else
+              echo "::error file=$f::missing or malformed go-import tag for $path"
+              fail=1
+            fi
+          done < <(find . -name index.html -not -path "./.git/*")
+          exit $fail
+
+      - name: CNAME matches the host the tags claim
+        run: |
+          set -euo pipefail
+          want=go.smritikosh.in
+          got=$(tr -d '[:space:]' < CNAME)
+          [ "$got" = "$want" ] || { echo "::error::CNAME is '$got', expected '$want'"; exit 1; }
+          echo "CNAME is $got"

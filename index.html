@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>go.smritikosh.in</title>
+<h1>go.smritikosh.in</h1>
+<p>Vanity import paths for SmritiKosh Go modules (ADR-028), so source code never
+embeds the GitHub organisation name and the organisation can be renamed or moved
+without touching a single import.
+<p>The modules themselves are in private repositories. Set
+<code>GOPRIVATE=go.smritikosh.in/*</code> and authenticate to GitHub to fetch them.
+<p>This host serves meta tags only. It is deliberately a subdomain: the apex
+<code>smritikosh.in</code> stays free for the product, so pointing it at AWS later
+cannot break Go resolution.
