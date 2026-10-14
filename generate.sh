@@ -13,6 +13,7 @@ HOST=go.smritikosh.in
 # module path suffix -> GitHub repository
 MODULES="
 contracts:smritikosh-contracts
+runtime:smritikosh-runtime-go
 ingestion:smritikosh-ingestion
 scheduler:smritikosh-scheduler
 notification:smritikosh-notification
